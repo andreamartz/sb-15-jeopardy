@@ -71,7 +71,17 @@ async function getCategoryIds() {
  *   ]
  */
 
-function getCategory(catId) {}
+async function getCategory(catId) {
+  const url = `http://jservice.io/api/category?id=${catId}`;
+  const res = await axios.get(url);
+  let { title, clues } = res.data;
+  const cluesInfo = clues.map((clue) => ({
+    question: clue.question,
+    answer: clue.answer,
+    showing: null,
+  }));
+  return { title, cluesInfo };
+}
 
 /** Fill the HTML table#jeopardy with the categories & cells for questions.
  *
