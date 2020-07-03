@@ -106,8 +106,35 @@ async function makeGameInMemory() {
  *   (initally, just show a "?" where the question/answer would go.)
  */
 
-async function fillTable() {}
+async function fillTable() {
+  const $body = $("body");
+  const $table = $("<table>", { id: "boardHTML" });
+  $body.prepend($table);
+  const $tr = $("<tr>");
+  const $thead = $("<thead>");
+  const $tbody = $("<tbody>");
+  $tr.appendTo($thead);
+  for (let y = 0; y < numQsInCateg; y++) {
+    let $row = $("<tr>", { id: `row${y}` }).appendTo($tbody);
 
+    for (let x = 0; x < numCategories; x++) {
+      $("<td>", { id: `${y}-${x}`, text: "?" })
+        .attr("data-content", "clue")
+        .appendTo($row);
+    }
+  }
+  $thead.appendTo($table);
+  $tbody.appendTo($table);
+
+  const categories = await makeGameInMemory();
+  console.log("categories: ", categories);
+  // loop through categories array and populate thead tr th's with categ names
+  for (let category of categories) {
+    const catTitle = category.title.toUpperCase();
+    const $th = $("<th>").text(`${catTitle}`);
+    $th.appendTo($tr);
+  }
+}
 /** Handle clicking on a clue: show the question or answer.
  *
  * Uses .showing property on clue to determine what to show:
