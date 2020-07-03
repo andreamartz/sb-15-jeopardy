@@ -52,11 +52,12 @@ function shuffle(array, numToKeep) {
 async function getCategoryIds() {
   const url = "http://jservice.io/api/categories?count=100";
   const res = await axios.get(url);
-  const categories = res.data.map((category) => ({
+  let categories = res.data.map((category) => ({
     id: category.id,
     title: category.title,
   }));
-  return shuffle(categories, numCategories);
+  categories = shuffle(categories, numCategories);
+  return categories;
 }
 
 /** Return object with data about a single category:
@@ -75,12 +76,12 @@ async function getCategory(catId) {
   const url = `http://jservice.io/api/category?id=${catId}`;
   const res = await axios.get(url);
   let { title, clues } = res.data;
-  const cluesInfo = clues.map((clue) => ({
+  let cluesInfo = clues.map((clue) => ({
     question: clue.question,
     answer: clue.answer,
     showing: null,
   }));
-  shuffle(cluesInfo, numQsInCateg);
+  cluesInfo = shuffle(cluesInfo, numQsInCateg);
   return { title, cluesInfo };
 }
 
@@ -142,8 +143,6 @@ async function fillTable() {
  * - if currently "question", show answer & set .showing to "answer"
  * - if currently "answer", ignore click
  * */
-
-function handleClick(evt) {}
 
 /** Wipe the current Jeopardy board, show the loading spinner,
  * and update the button used to fetch data.
