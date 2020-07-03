@@ -6,6 +6,34 @@
   --dk-purple: #74119c;
 }
 
+body {
+  font-family: Copse;
+}
+
+/* button styling code comes from bestcssbuttongenerator.com */
+#start {
+  box-shadow: 0px 0px 2px 0px #3dc21b;
+  background: linear-gradient(to bottom, #44c767 5%, #5cbf2a 100%);
+  background-color: #44c767;
+  border-radius: 28px;
+  border: 1px solid #18ab29;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 17px;
+  padding: 16px 31px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #2f6627;
+}
+#start:hover {
+  background: linear-gradient(to bottom, #5cbf2a 5%, #44c767 100%);
+  background-color: #5cbf2a;
+}
+#start:active {
+  position: relative;
+  top: 1px;
+}
+
 td {
   font-size: 12px;
 }
@@ -14,7 +42,6 @@ th,
 td {
   background-color: var(--dk-blue);
   color: white;
-  font-family: Copse;
   width: 150px;
   height: 120px;
   padding: 10px;

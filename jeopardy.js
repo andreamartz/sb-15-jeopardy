@@ -20,6 +20,7 @@
 
 const numCategories = 6;
 const numQsInCateg = 5;
+let categories = [];
 
 // Here is a helper function to shuffle an array (uses Fisher Yates algo)
 // Given an array of six items or longer, it shuffles that array and
@@ -76,23 +77,22 @@ async function getCategory(catId) {
   const url = `http://jservice.io/api/category?id=${catId}`;
   const res = await axios.get(url);
   let { title, clues } = res.data;
-  let cluesInfo = clues.map((clue) => ({
+  clues = clues.map((clue) => ({
     question: clue.question,
     answer: clue.answer,
     showing: null,
   }));
-  cluesInfo = shuffle(cluesInfo, numQsInCateg);
-  return { title, cluesInfo };
+  clues = shuffle(clues, numQsInCateg);
+  return { title, clues };
 }
 
 async function makeGameInMemory() {
-  const categories = [];
-  // getCategoryIds returns an array of category objects: [ {id: 11496, title: "Show title"}]
+  // const categories = [];
+  // create an array of category objects: [ {id: 11496, title: "Show title"}, {...}, ..., {...}]
   const catInfo = await getCategoryIds();
 
-  // getCategory(catId) takes an id and returns categ object w/ q & a { title: "Math", clues: clue-array }
+  // for each category, run getCategory(catId) and push categ object w/ q & a { title: "Math", clues: clue-array } onto gameInMemory
 
-  // for each category, run getCategory(catId) and push the resulting object onto gameInMemory
   for (let cat of catInfo) {
     categories.push(await getCategory(cat.id));
   }
@@ -109,8 +109,13 @@ async function makeGameInMemory() {
 
 async function fillTable() {
   const $body = $("body");
+  const $h1 = $("<h1>", { id: "title", text: "Jeopardy!" });
+  $body.prepend($h1);
+  // $table.before($h1);
+  $("#title").after("<button id='start'>Start Game!</button>");
+
   const $table = $("<table>", { id: "boardHTML" });
-  $body.prepend($table);
+  $("#start").after($table);
   const $tr = $("<tr>");
   const $thead = $("<thead>");
   const $tbody = $("<tbody>");
@@ -120,7 +125,7 @@ async function fillTable() {
 
     for (let x = 0; x < numCategories; x++) {
       $("<td>", { id: `${y}-${x}`, text: "?" })
-        .attr("data-content", "clue")
+        .attr("data-showing", "null")
         .appendTo($row);
     }
   }
@@ -143,6 +148,44 @@ async function fillTable() {
  * - if currently "question", show answer & set .showing to "answer"
  * - if currently "answer", ignore click
  * */
+
+function handleClick(evt) {
+  const tgt = evt.target;
+  console.log("this: ", this);
+  console.log("target: ", tgt);
+  // get target id.  ids are 'y-x', so the x value tells us the index of the object in categories array
+  const $tgtId = $(tgt).attr("id");
+  const $tgtIdX = $tgtId[2];
+  const $tgtIdY = $tgtId[0];
+  console.log("targetId: ", $tgtId);
+  // for that object, get the clues array
+  const clues = categories[$tgtIdX].clues;
+  console.log("clues: ", clues);
+  // the 'y' part of the target id tells us the index of the corresponding clue
+  // check the .showing property of the clue:
+  //   if null:
+  //     show question
+  //     set clue.showing to "question" in categories data structure (a.k.a., gameInMemory)
+  //   if question:
+  //     show answer
+  //     set clue.showing to "answer"
+  //   if answer:
+  //     return (ignore click)
+  const showing = clues[$tgtIdY].showing;
+  console.log("showing: ", clues[$tgtIdY].showing);
+  if (clues[$tgtIdY].showing === "answer") {
+    return;
+  }
+  if (clues[$tgtIdY].showing === null) {
+    clues[$tgtIdY].showing = "question";
+    $(tgt).text(`${clues[$tgtIdY].question}`);
+  } else if (clues[$tgtIdY].showing === "question") {
+    clues[$tgtIdY].showing = "answer";
+    $(tgt).text(`${clues[$tgtIdY].answer}`);
+  }
+}
+
+$("body").on("click", "td", handleClick);
 
 /** Wipe the current Jeopardy board, show the loading spinner,
  * and update the button used to fetch data.
