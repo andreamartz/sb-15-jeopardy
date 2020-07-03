@@ -18,13 +18,14 @@
 //    ...
 //  ]
 
-// let categories = [];
+const numCategories = 6;
+const numQsInCateg = 5;
 
 // Here is a helper function to shuffle an array (uses Fisher Yates algo)
 // Given an array of six items or longer, it shuffles that array and
 // returns the first six items as an array.
 
-function chooseCategs(array) {
+function shuffle(array, numToKeep) {
   let counter = array.length;
 
   // While there are elements in the array
@@ -41,7 +42,7 @@ function chooseCategs(array) {
     array[index] = temp;
   }
   // Keep only the first six in array
-  return array.slice(0, 6);
+  return array.slice(0, numToKeep);
 }
 
 /** Get NUM_CATEGORIES random category from API.
@@ -51,16 +52,14 @@ function chooseCategs(array) {
 async function getCategoryIds() {
   const url = "http://jservice.io/api/categories?count=100";
   const res = await axios.get(url);
-  console.log(res.data);
   const categories = res.data.map((category) => ({
     id: category.id,
     title: category.title,
   }));
-  console.log("catIds: ", categories);
-  return chooseCategs(categories);
+  return shuffle(categories, numCategories);
 }
 
-/** Return object with data about a category:
+/** Return object with data about a single category:
  *
  *  Returns { title: "Math", clues: clue-array }
  *
@@ -81,6 +80,7 @@ async function getCategory(catId) {
     answer: clue.answer,
     showing: null,
   }));
+  shuffle(cluesInfo, numQsInCateg);
   return { title, cluesInfo };
 }
 
@@ -88,7 +88,6 @@ async function makeGameInMemory() {
   const categories = [];
   // getCategoryIds returns an array of category objects: [ {id: 11496, title: "Show title"}]
   const catInfo = await getCategoryIds();
-  console.log("catInfo: ", catInfo);
 
   // getCategory(catId) takes an id and returns categ object w/ q & a { title: "Math", clues: clue-array }
 
@@ -98,22 +97,6 @@ async function makeGameInMemory() {
   }
   return categories;
 }
-
-// let table = $('<table></table>');
-// <table>
-// <thead>
-//   <tr>
-//     <th></th>
-//     <th></th>
-//   </tr>
-// </thead>
-// <tbody>
-//   <tr>
-//     <td></td>
-//     <td></td>
-//   </tr>
-// </tbody>
-// </table>
 
 /** Fill the HTML table#jeopardy with the categories & cells for questions.
  *
@@ -139,7 +122,10 @@ function handleClick(evt) {}
  * and update the button used to fetch data.
  */
 
-function showLoadingView() {}
+function showLoadingView() {
+  // $board.empty();
+  // show loading spinner ????
+}
 
 /** Remove the loading spinner and update the button used to fetch data. */
 

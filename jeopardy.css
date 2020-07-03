@@ -5,3 +5,19 @@
   --med-purple: #8d2ab5;
   --dk-purple: #74119c;
 }
+
+th {
+  padding: 10px;
+  width: 150px;
+}
+
+td {
+  font-size: 12px;
+}
+
+th,
+td {
+  background-color: var(--dk-blue);
+  color: white;
+  font-family: Copse;
+}
