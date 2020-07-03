@@ -21,7 +21,7 @@
 // here is a helper function to shuffle an array
 // it returns the same array with values shuffled
 // it is based on an algorithm called Fisher Yates if you want ot research more
-function shuffle(array) {
+function chooseCategs(array) {
   let counter = array.length;
 
   // While there are elements in the array
@@ -37,8 +37,8 @@ function shuffle(array) {
     array[counter] = array[index];
     array[index] = temp;
   }
-
-  return array;
+  // Keep only the first six in array
+  return array.slice(0, 7);
 }
 
 // *********************************************************
@@ -56,7 +56,7 @@ async function getCategoryIds() {
     id: category.id,
     title: category.title,
   }));
-  return categoryIds;
+  return chooseCategs(categoryIds);
 }
 
 /** Return object with data about a category:
