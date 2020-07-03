@@ -45,7 +45,6 @@ function shuffle(array) {
 let categories = [];
 
 /** Get NUM_CATEGORIES random category from API.
- *
  * Returns array of category ids
  */
 
@@ -53,8 +52,11 @@ async function getCategoryIds() {
   const url = "http://jservice.io/api/categories?count=100";
   const res = await axios.get(url);
   console.log(res.data);
-  const result = res.data.map((category) => category.id);
-  console.log(result);
+  const categoryIds = res.data.map((category) => ({
+    id: category.id,
+    title: category.title,
+  }));
+  return categoryIds;
 }
 
 /** Return object with data about a category:
