@@ -62,9 +62,7 @@ async function getCategoryIds() {
 }
 
 /** Return object with data about a single category:
- *
  *  Returns { title: "Math", clues: clue-array }
- *
  * Where clue-array is:
  *   [
  *      {question: "Hamlet Author", answer: "Shakespeare", showing: null},
@@ -87,12 +85,9 @@ async function getCategory(catId) {
 }
 
 async function makeGameInMemory() {
-  // const categories = [];
   // create an array of category objects: [ {id: 11496, title: "Show title"}, {...}, ..., {...}]
   const catInfo = await getCategoryIds();
-
   // for each category, run getCategory(catId) and push categ object w/ q & a { title: "Math", clues: clue-array } onto gameInMemory
-
   for (let cat of catInfo) {
     categories.push(await getCategory(cat.id));
   }
@@ -108,18 +103,22 @@ async function makeGameInMemory() {
  */
 
 async function fillTable() {
-  const $body = $("body");
-  const $h1 = $("<h1>", { id: "title", text: "Jeopardy!" });
-  $body.prepend($h1);
-  // $table.before($h1);
-  $("#title").after("<button id='start'>Start Game!</button>");
-
-  const $table = $("<table>", { id: "boardHTML" });
-  $("#start").after($table);
-  const $tr = $("<tr>");
-  const $thead = $("<thead>");
-  const $tbody = $("<tbody>");
+  // ******** CREATE THE TABLE HEAD ********
+  let $thead = $("<thead>");
+  let $tr = $("<tr>");
   $tr.appendTo($thead);
+  const categories = await makeGameInMemory();
+  console.log("categories: ", categories);
+  // loop through categories array and populate thead tr th's with categ names
+  for (let category of categories) {
+    const catTitle = category.title.toUpperCase();
+    const $th = $("<th>").text(`${catTitle}`);
+    $th.appendTo($tr);
+  }
+
+  // ********* CREATE THE TABLE BODY *************
+  const $tbody = $("<tbody>");
+  // add numQsInCateg rows to table body (tbody)
   for (let y = 0; y < numQsInCateg; y++) {
     let $row = $("<tr>", { id: `row${y}` }).appendTo($tbody);
 
@@ -129,18 +128,17 @@ async function fillTable() {
         .appendTo($row);
     }
   }
+
+  // ******* CREATE AND PLACE THE TABLE *************
+  const $table = $("<table>", { id: "boardHtml" });
   $thead.appendTo($table);
   $tbody.appendTo($table);
+  $("#start").after($table);
 
-  const categories = await makeGameInMemory();
-  console.log("categories: ", categories);
-  // loop through categories array and populate thead tr th's with categ names
-  for (let category of categories) {
-    const catTitle = category.title.toUpperCase();
-    const $th = $("<th>").text(`${catTitle}`);
-    $th.appendTo($tr);
-  }
+  // ****** ADD CLICK EVENT LISTENER ***********
+  $("#boardHtml").on("click", "td", handleClick);
 }
+
 /** Handle clicking on a clue: show the question or answer.
  *
  * Uses .showing property on clue to determine what to show:
@@ -163,42 +161,49 @@ function handleClick(evt) {
   console.log("clues: ", clues);
   // the 'y' part of the target id tells us the index of the corresponding clue
   // check the .showing property of the clue:
-  //   if null:
-  //     show question
-  //     set clue.showing to "question" in categories data structure (a.k.a., gameInMemory)
-  //   if question:
-  //     show answer
-  //     set clue.showing to "answer"
-  //   if answer:
-  //     return (ignore click)
+  //   if null: show question & set clue.showing to "question"
+  //   if question: show answer & set clue.showing to "answer"
+  //   if answer: return (ignore click)
   const showing = clues[$tgtIdY].showing;
-  console.log("showing: ", clues[$tgtIdY].showing);
-  if (clues[$tgtIdY].showing === "answer") {
+  console.log("showing: ", showing);
+  if (showing === "answer") {
     return;
   }
-  if (clues[$tgtIdY].showing === null) {
+  if (showing === null) {
     clues[$tgtIdY].showing = "question";
     $(tgt).text(`${clues[$tgtIdY].question}`);
-  } else if (clues[$tgtIdY].showing === "question") {
+  } else if (showing === "question") {
     clues[$tgtIdY].showing = "answer";
     $(tgt).text(`${clues[$tgtIdY].answer}`);
   }
 }
-
-$("body").on("click", "td", handleClick);
 
 /** Wipe the current Jeopardy board, show the loading spinner,
  * and update the button used to fetch data.
  */
 
 function showLoadingView() {
-  // $board.empty();
-  // show loading spinner ????
+  // remove table and reset categories to be []
+  $("#boardHtml").remove();
+  categories = [];
+  // remove button event listener -- WHY??
+  $("body").off("click", "#start", setupAndStart);
+  // create loading spinner
+
+  // let $spinner = $("<div>").after("<img src='spinner-1s-200px.gif'>");
+
+  let $spinner = `<div id="spinner"><img src="spinner-1s-200px.gif" alt="" /></div>`;
+  $("#start").after($spinner);
 }
 
 /** Remove the loading spinner and update the button used to fetch data. */
 
-function hideLoadingView() {}
+function hideLoadingView() {
+  // hide loading spinner
+  $("#spinner").remove();
+  // add event listener to button
+  $("body").on("click", "#start", setupAndStart);
+}
 
 /** Start game:
  *
@@ -207,10 +212,19 @@ function hideLoadingView() {}
  * - create HTML table
  * */
 
-function setupAndStart() {}
+async function setupAndStart(evt) {
+  showLoadingView(); // removes the table and empties the categories data
+  // hideLoadingView();
+  await fillTable();
+  hideLoadingView();
+}
 
+const $body = $("body");
+const $h1 = $("<h1>", { id: "title", text: "Jeopardy!" });
+$body.prepend($h1);
+$("#title").after("<button id='start'>Start Game!</button>");
 /** On click of start / restart button, set up game. */
-
+$("body").on("click", "#start", setupAndStart);
 // TODO
 
 /** On page load, add event handler for clicking clues */

@@ -6,8 +6,17 @@
   --dk-purple: #74119c;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: Copse;
+}
+
+h1,
+table {
+  margin: 0 auto;
 }
 
 /* button styling code comes from bestcssbuttongenerator.com */
@@ -17,10 +26,12 @@ body {
   background-color: #44c767;
   border-radius: 28px;
   border: 1px solid #18ab29;
-  display: inline-block;
+  display: block;
   cursor: pointer;
-  color: #ffffff;
+  color: #fff;
   font-size: 17px;
+  /* margin-bottom: 16px; */
+  margin: 0 auto 16px;
   padding: 16px 31px;
   text-decoration: none;
   text-shadow: 0px 1px 0px #2f6627;
