@@ -1,5 +1,5 @@
 :root {
-  --med-blue: #115ff4;
+  --med-blue: #b1c9f5;
   --dk-blue: #060ce9;
   --green: #28a200;
   --med-purple: #8d2ab5;
@@ -12,9 +12,14 @@
 
 body {
   font-family: Copse;
+  background-color: var(--med-blue);
 }
 
 h1,
+#spinner {
+  text-align: center;
+}
+
 table {
   margin: 0 auto;
 }

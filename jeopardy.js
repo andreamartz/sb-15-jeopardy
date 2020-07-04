@@ -84,12 +84,12 @@ async function getCategory(catId) {
   return { title, clues };
 }
 
-async function makeGameInMemory() {
-  // create an array of category objects: [ {id: 11496, title: "Show title"}, {...}, ..., {...}]
-  const catInfo = await getCategoryIds();
-  // for each category, run getCategory(catId) and push categ object w/ q & a { title: "Math", clues: clue-array } onto gameInMemory
-  for (let cat of catInfo) {
-    categories.push(await getCategory(cat.id));
+async function getGameData() {
+  const categoryIds = await getCategoryIds();
+  // update categories data: for each category,
+  // add object w/ q's & a's { title: "Math", clues: clue-array }
+  for (let categ of categoryIds) {
+    categories.push(await getCategory(categ.id));
   }
   return categories;
 }
@@ -102,14 +102,15 @@ async function makeGameInMemory() {
  *   (initally, just show a "?" where the question/answer would go.)
  */
 
-async function fillTable() {
+async function fillTable(callback) {
   // ******** CREATE THE TABLE HEAD ********
   let $thead = $("<thead>");
   let $tr = $("<tr>");
   $tr.appendTo($thead);
-  const categories = await makeGameInMemory();
-  console.log("categories: ", categories);
-  // loop through categories array and populate thead tr th's with categ names
+
+  // populate table header row with categ names
+  const categories = await getGameData();
+
   for (let category of categories) {
     const catTitle = category.title.toUpperCase();
     const $th = $("<th>").text(`${catTitle}`);
@@ -123,9 +124,7 @@ async function fillTable() {
     let $row = $("<tr>", { id: `row${y}` }).appendTo($tbody);
 
     for (let x = 0; x < numCategories; x++) {
-      $("<td>", { id: `${y}-${x}`, text: "?" })
-        .attr("data-showing", "null")
-        .appendTo($row);
+      $("<td>", { id: `${y}-${x}`, text: "?" }).appendTo($row);
     }
   }
 
@@ -137,6 +136,9 @@ async function fillTable() {
 
   // ****** ADD CLICK EVENT LISTENER ***********
   $("#boardHtml").on("click", "td", handleClick);
+
+  // ******* RUN CALLBACK *******
+  callback();
 }
 
 /** Handle clicking on a clue: show the question or answer.
@@ -149,30 +151,22 @@ async function fillTable() {
 
 function handleClick(evt) {
   const tgt = evt.target;
-  console.log("this: ", this);
-  console.log("target: ", tgt);
   // get target id.  ids are 'y-x', so the x value tells us the index of the object in categories array
   const $tgtId = $(tgt).attr("id");
   const $tgtIdX = $tgtId[2];
   const $tgtIdY = $tgtId[0];
-  console.log("targetId: ", $tgtId);
   // for that object, get the clues array
   const clues = categories[$tgtIdX].clues;
-  console.log("clues: ", clues);
-  // the 'y' part of the target id tells us the index of the corresponding clue
+  // the 'y' in the target id is the index of the corresponding clue
   // check the .showing property of the clue:
   //   if null: show question & set clue.showing to "question"
   //   if question: show answer & set clue.showing to "answer"
   //   if answer: return (ignore click)
-  const showing = clues[$tgtIdY].showing;
-  console.log("showing: ", showing);
-  if (showing === "answer") {
-    return;
-  }
-  if (showing === null) {
+  if (clues[$tgtIdY].showing === "answer") return;
+  if (clues[$tgtIdY].showing === null) {
     clues[$tgtIdY].showing = "question";
     $(tgt).text(`${clues[$tgtIdY].question}`);
-  } else if (showing === "question") {
+  } else if (clues[$tgtIdY].showing === "question") {
     clues[$tgtIdY].showing = "answer";
     $(tgt).text(`${clues[$tgtIdY].answer}`);
   }
@@ -189,19 +183,14 @@ function showLoadingView() {
   // remove button event listener -- WHY??
   $("body").off("click", "#start", setupAndStart);
   // create loading spinner
-
-  // let $spinner = $("<div>").after("<img src='spinner-1s-200px.gif'>");
-
-  let $spinner = `<div id="spinner"><img src="spinner-1s-200px.gif" alt="" /></div>`;
+  let $spinner = `<div id="spinner"><img src="spinner-1s-457px.gif" alt="" /></div>`;
   $("#start").after($spinner);
 }
 
 /** Remove the loading spinner and update the button used to fetch data. */
 
 function hideLoadingView() {
-  // hide loading spinner
   $("#spinner").remove();
-  // add event listener to button
   $("body").on("click", "#start", setupAndStart);
 }
 
@@ -213,10 +202,8 @@ function hideLoadingView() {
  * */
 
 async function setupAndStart(evt) {
-  showLoadingView(); // removes the table and empties the categories data
-  // hideLoadingView();
-  await fillTable();
-  hideLoadingView();
+  showLoadingView();
+  await fillTable(hideLoadingView);
 }
 
 const $body = $("body");
@@ -224,8 +211,7 @@ const $h1 = $("<h1>", { id: "title", text: "Jeopardy!" });
 $body.prepend($h1);
 $("#title").after("<button id='start'>Start Game!</button>");
 /** On click of start / restart button, set up game. */
-$("body").on("click", "#start", setupAndStart);
-// TODO
+$("body").on("click", "#start", setupAndStart); // WHY did I not need "await" here right before fcn name?  Why does it not work when I add it?
 
 /** On page load, add event handler for clicking clues */
 
