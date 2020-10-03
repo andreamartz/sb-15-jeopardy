@@ -51,7 +51,7 @@ function shuffle(array, numToKeep) {
  */
 
 async function getCategoryIds() {
-  const url = "http://jservice.io/api/categories?count=100";
+  const url = "https://jservice.io/api/categories?count=100";
   const res = await axios.get(url);
   let categories = res.data.map((category) => ({
     id: category.id,
@@ -72,16 +72,22 @@ async function getCategoryIds() {
  */
 
 async function getCategory(catId) {
-  const url = `http://jservice.io/api/category?id=${catId}`;
+  const url = `https://jservice.io/api/category?id=${catId}`;
   const res = await axios.get(url);
-  let { title, clues } = res.data;
+  let {
+    title,
+    clues
+  } = res.data;
   clues = clues.map((clue) => ({
     question: clue.question,
     answer: clue.answer,
     showing: null,
   }));
   clues = shuffle(clues, numQsInCateg);
-  return { title, clues };
+  return {
+    title,
+    clues
+  };
 }
 
 async function getGameData() {
@@ -121,15 +127,22 @@ async function fillTable(callback) {
   const $tbody = $("<tbody>");
   // add numQsInCateg rows to table body (tbody)
   for (let y = 0; y < numQsInCateg; y++) {
-    let $row = $("<tr>", { id: `row${y}` }).appendTo($tbody);
+    let $row = $("<tr>", {
+      id: `row${y}`
+    }).appendTo($tbody);
 
     for (let x = 0; x < numCategories; x++) {
-      $("<td>", { id: `${y}-${x}`, text: "?" }).appendTo($row);
+      $("<td>", {
+        id: `${y}-${x}`,
+        text: "?"
+      }).appendTo($row);
     }
   }
 
   // ******* CREATE AND PLACE THE TABLE *************
-  const $table = $("<table>", { id: "boardHtml" });
+  const $table = $("<table>", {
+    id: "boardHtml"
+  });
   $thead.appendTo($table);
   $tbody.appendTo($table);
   $("#start").after($table);
@@ -207,7 +220,10 @@ async function setupAndStart(evt) {
 }
 
 const $body = $("body");
-const $h1 = $("<h1>", { id: "title", text: "Jeopardy!" });
+const $h1 = $("<h1>", {
+  id: "title",
+  text: "Jeopardy!"
+});
 $body.prepend($h1);
 $("#title").after("<button id='start'>Start Game!</button>");
 /** On click of start / restart button, set up game. */
